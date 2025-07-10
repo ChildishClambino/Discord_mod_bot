@@ -202,5 +202,36 @@ async def talk(ctx, *, message):
         print(f"Vent error: {e}")
         await ctx.send("⚠️ Something went wrong. I’m still here if you want to try again.")
 
+@bot.command()
+async def intro(ctx):
+    try:
+        files = [
+            discord.File("amicabot_avatar.png", filename="amicabot_avatar.png"),
+            discord.File("banner.png", filename="banner.png")
+        ]
+
+        embed = discord.Embed(
+            title="👋 Hello! I’m Amicabot.",
+            description=(
+                "I'm your emotionally intelligent AI friend — here to chat, code, and support you.\n\n"
+                "**What I can do:**\n"
+                "• Friendly conversations via `!chat`\n"
+                "• Code help with `!code`\n"
+                "• Memory storage using `!remember`\n"
+                "• One-on-one talks with `!vent`\n"
+                "• View stored facts with `!whoami`\n\n"
+                "_To see everything I can do, type_ `!commands`"
+            ),
+            color=discord.Color.red()
+        )
+
+        embed.set_thumbnail(url="attachment://amicabot_avatar.png")
+        embed.set_image(url="attachment://banner.png")
+
+        await ctx.send(files=files, embed=embed)
+
+    except FileNotFoundError as e:
+        await ctx.send("⚠️ Missing image file. Make sure both `amicabot_avatar.png` and `banner.png` are in the same folder.")
+
 
 bot.run(TOKEN)
