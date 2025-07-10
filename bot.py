@@ -144,5 +144,63 @@ async def on_ready():
         status=discord.Status.online
     )
     print(f"✅ Amicabot is online as {bot.user}")
+    # === Emotional Support Feature ===
+
+from collections import deque
+
+# DM memory store
+dm_conversations = {}
+
+# Trigger from public server: "!vent can we talk"
+@bot.command()
+async def vent(ctx, *, message=None):
+    if str(ctx.channel.type) != "private":
+        try:
+            await ctx.author.send(
+                "💌 Hey, I’m here for you. Just message me like this:\n`!talk your message`\nI’ll listen and support you."
+            )
+            await ctx.send("📩 Check your DMs — I’ve messaged you privately.")
+        except discord.Forbidden:
+            await ctx.send("❌ I couldn’t DM you. Please enable DMs from server members.")
+    else:
+        await ctx.send("We’re already talking here. Just send `!talk [your message]`.")
+
+# DM-based support chat: "!talk [message]"
+@bot.command()
+async def talk(ctx, *, message):
+    if str(ctx.channel.type) != "private":
+        await ctx.send("🛑 This command only works in DMs. Please message me directly.")
+        return
+
+    user_id = str(ctx.author.id)
+    if user_id not in dm_conversations:
+        dm_conversations[user_id] = deque(maxlen=6)
+    
+    dm_conversations[user_id].append({"role": "user", "content": message})
+
+    support_prompt = {
+        "role": "system",
+        "content": (
+            "You are Amicabot in emotional support mode. You're warm, attentive, and empathetic. "
+            "You respond like a true friend, emotionally intelligent and understanding. "
+            "Don’t use random affirmations — always speak directly to what the user is saying, from the heart. "
+            "Be supportive, kind, and make the user feel heard."
+        )
+    }
+
+    messages = [support_prompt] + list(dm_conversations[user_id])
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4" if use_gpt4 else "gpt-3.5-turbo",
+            messages=messages
+        )
+        reply = response.choices[0].message.content
+        dm_conversations[user_id].append({"role": "assistant", "content": reply})
+        await ctx.send(reply)
+    except Exception as e:
+        print(f"Vent error: {e}")
+        await ctx.send("⚠️ Something went wrong. I’m still here if you want to try again.")
+
 
 bot.run(TOKEN)
