@@ -7,7 +7,7 @@ import random
 
 load_dotenv()
 token = os.getenv("DISCORD_TOKEN")
-jacob_id = os.getenv("JACOB_ID")  # Jacob's user ID as string
+jacob_id = os.getenv("JACOB_USER_ID")  # Jacob's user ID as string
 
 intents = discord.Intents.default()
 intents.message_content = True
